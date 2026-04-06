@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cotizador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1814;
+    --ink2: #4a4742;
+    --ink3: #9a9590;
+    --paper: #faf9f6;
+    --surface: #ffffff;
+    --border: #e8e4de;
+    --accent: #c8622a;
+    --accent-light: #fdf1eb;
+    --accent-dark: #a04e1e;
+    --success: #2a7a4a;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--ink);
+    color: white;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .brand-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    letter-spacing: -0.3px;
+    color: white;
+  }
+  .brand-sep { width: 1px; height: 18px; background: rgba(255,255,255,0.2); }
+  .brand-sub { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 300; letter-spacing: 0.5px; text-transform: uppercase; }
+
+  .nav-tabs { display: flex; gap: 4px; }
+  .tab-btn {
+    background: none; border: none; color: rgba(255,255,255,0.55);
+    padding: 8px 16px; border-radius: 6px; font-family: 'Outfit', sans-serif;
+    font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+    letter-spacing: 0.2px;
+  }
+  .tab-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+  .tab-btn.active { background: var(--accent); color: white; }
+
+  /* ── Layout ── */
+  .page { display: none; max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+  .page.active { display: block; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 1.1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    color: var(--ink);
+  }
+  .card-body { padding: 1.5rem; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px; border-radius: 7px; font-family: 'Outfit', sans-serif;
+    font-size: 13.5px; font-weight: 500; cursor: pointer; border: none;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+  .btn-outline {
+    background: white; color: var(--ink2);
+    border: 1px solid var(--border);
+  }
+  .btn-outline:hover { border-color: var(--ink3); background: var(--paper); }
+  .btn-ghost { background: none; color: var(--ink3); padding: 6px 10px; }
+  .btn-ghost:hover { color: var(--ink); background: var(--paper); }
+  .btn-danger { background: none; color: #c0392b; border: 1px solid #f5c6c2; padding: 6px 10px; }
+  .btn-danger:hover { background: #fdf2f2; }
+  .btn-sm { padding: 6px 13px; font-size: 12.5px; }
+  .btn-icon { padding: 7px; border-radius: 6px; }
+
+  /* ── Forms ── */
+  .field-group { display: flex; flex-direction: column; gap: 5px; }
+  label { font-size: 12.5px; font-weight: 500; color: var(--ink2); text-transform: uppercase; letter-spacing: 0.4px; }
+  input[type="text"], input[type="number"], input[type="email"], textarea, select {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--border);
+    border-radius: 7px; font-family: 'Outfit', sans-serif; font-size: 14px;
+    color: var(--ink); background: white; transition: border-color 0.15s;
+    outline: none;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(200,98,42,0.08); }
+  textarea { resize: vertical; min-height: 72px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  /* ── Quote: client section ── */
+  .section-label {
+    font-size: 11px; font-weight: 600; color: var(--ink3);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+
+  /* ── Item selector ── */
+  .item-selector {
+    display: flex; gap: 10px; align-items: flex-end;
+    background: var(--accent-light); border: 1px solid #f0d4c4;
+    border-radius: 8px; padding: 14px;
+    margin-bottom: 16px;
+  }
+  .item-selector .field-group { flex: 1; }
+  .item-selector select, .item-selector input[type="number"] {
+    background: white;
+  }
+
+  /* ── Line items table ── */
+  .items-table { width: 100%; border-collapse: collapse; }
+  .items-table th {
+    font-size: 11px; font-weight: 600; color: var(--ink3);
+    text-transform: uppercase; letter-spacing: 0.7px;
+    padding: 8px 12px; border-bottom: 2px solid var(--border);
+    text-align: left;
+  }
+  .items-table th:last-child, .items-table td:last-child { text-align: right; }
+  .items-table th.center, .items-table td.center { text-align: center; }
+  .items-table td {
+    padding: 11px 12px; border-bottom: 1px solid var(--border);
+    font-size: 14px; color: var(--ink);
+    vertical-align: middle;
+  }
+  .items-table tr:last-child td { border-bottom: none; }
+  .items-table tr:hover td { background: var(--paper); }
+  .item-name { font-weight: 500; }
+  .item-unit { font-size: 12px; color: var(--ink3); margin-top: 1px; }
+  .qty-input {
+    width: 72px; padding: 6px 8px; border: 1px solid var(--border);
+    border-radius: 6px; font-family: 'Outfit', sans-serif; font-size: 14px;
+    text-align: center; color: var(--ink); background: white;
+  }
+  .qty-input:focus { border-color: var(--accent); outline: none; }
+
+  .subtotal { font-weight: 500; }
+  .empty-state {
+    text-align: center; padding: 2.5rem 1rem;
+    color: var(--ink3); font-size: 14px;
+  }
+  .empty-icon { font-size: 28px; margin-bottom: 8px; opacity: 0.5; }
+
+  /* ── Totals ── */
+  .totals-block {
+    background: var(--paper); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden;
+    margin-top: 16px;
+  }
+  .totals-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .totals-row:last-child { border-bottom: none; }
+  .totals-row .label { color: var(--ink2); }
+  .totals-row.total-final {
+    background: var(--ink); color: white;
+    font-size: 16px; font-weight: 600;
+    padding: 13px 16px;
+  }
+  .totals-row.total-final .label { color: rgba(255,255,255,0.75); font-weight: 400; }
+
+  .tax-row { display: flex; align-items: center; gap: 8px; }
+  .tax-input {
+    width: 60px; padding: 4px 8px; border: 1px solid var(--border);
+    border-radius: 5px; font-family: 'Outfit', sans-serif; font-size: 13px;
+    text-align: center;
+  }
+  .tax-input:focus { border-color: var(--accent); outline: none; }
+
+  /* ── Notes ── */
+  .quote-meta {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    margin-top: 16px;
+  }
+
+  /* ── Action bar ── */
+  .action-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 24px; padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── Price config ── */
+  .price-item {
+    display: grid; grid-template-columns: 1fr auto auto;
+    align-items: center; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .price-item:last-child { border-bottom: none; }
+  .price-name-field {
+    font-size: 14px; font-weight: 500; color: var(--ink);
+    padding: 7px 10px; border: 1px solid transparent;
+    border-radius: 6px; background: transparent;
+    font-family: 'Outfit', sans-serif;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  .price-name-field:hover { border-color: var(--border); background: var(--paper); }
+  .price-name-field:focus { border-color: var(--accent); background: white; outline: none; }
+  .price-price-field {
+    font-size: 14px; font-weight: 500; color: var(--accent);
+    padding: 7px 10px; border: 1px solid var(--border);
+    border-radius: 6px; background: white;
+    font-family: 'Outfit', sans-serif;
+    text-align: right; width: 120px;
+  }
+  .price-price-field:focus { border-color: var(--accent); outline: none; }
+  .price-unit-field {
+    font-size: 12px; color: var(--ink3);
+    padding: 5px 8px; border: 1px solid transparent;
+    border-radius: 5px; background: transparent;
+    font-family: 'Outfit', sans-serif;
+    width: 90px;
+  }
+  .price-unit-field:hover { border-color: var(--border); background: var(--paper); }
+  .price-unit-field:focus { border-color: var(--accent); background: white; outline: none; }
+
+  .config-grid {
+    display: grid; grid-template-columns: 2fr 1fr 100px 42px;
+    gap: 8px; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .config-grid:first-child { padding-top: 0; }
+  .config-grid:last-child { border-bottom: none; }
+
+  .col-header {
+    font-size: 11px; font-weight: 600; color: var(--ink3);
+    text-transform: uppercase; letter-spacing: 0.7px;
+    padding-bottom: 8px; border-bottom: 2px solid var(--border);
+    margin-bottom: 4px;
+  }
+  .config-headers {
+    display: grid; grid-template-columns: 2fr 1fr 100px 42px;
+    gap: 8px; padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  .tag { display: inline-flex; padding: 2px 8px; border-radius: 20px; font-size: 11.5px; font-weight: 500; }
+  .tag-saved { background: #e6f4ec; color: #2a7a4a; }
+
+  /* ── Currency display ── */
+  .money { font-variant-numeric: tabular-nums; }
+  .currency-symbol { font-size: 11px; color: var(--ink3); margin-right: 1px; vertical-align: super; }
+
+  /* ── Divider ── */
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* ── PRINT ── */
+  @media print {
+    header, .action-bar, .no-print { display: none !important; }
+    body { background: white; }
+    .page { display: block !important; padding: 0; max-width: 100%; }
+    .print-show { display: block !important; }
+    .card { box-shadow: none; border: 1px solid #ddd; }
+    .items-table tr:hover td { background: none; }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    header { padding: 0 1rem; }
+    .brand-sub { display: none; }
+    .page { padding: 1.5rem 1rem 3rem; }
+  }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--ink); color: white; padding: 10px 18px;
+    border-radius: 8px; font-size: 13.5px; font-weight: 500;
+    opacity: 0; transform: translateY(6px);
+    transition: all 0.25s; pointer-events: none; z-index: 999;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="brand-name" id="header-brand">Mi Empresa</span>
+    <span class="brand-sep"></span>
+    <span class="brand-sub">Cotizador</span>
+  </div>
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="showTab('quote')">Cotización</button>
+    <button class="tab-btn" onclick="showTab('config')">Configurar precios</button>
+  </nav>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- TAB: COTIZACIÓN                                            -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="page active" id="page-quote">
+
+  <!-- Datos del cliente -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-header">
+      <span class="card-title">Datos del cliente</span>
+      <button class="btn btn-ghost btn-sm" onclick="clearClient()">Limpiar</button>
+    </div>
+    <div class="card-body">
+      <div class="grid-3" style="margin-bottom:14px;">
+        <div class="field-group" style="grid-column: span 2;">
+          <label>Cliente / Empresa</label>
+          <input type="text" id="client-name" placeholder="Nombre del cliente">
+        </div>
+        <div class="field-group">
+          <label>Número de cotización</label>
+          <input type="text" id="quote-number" placeholder="COT-001">
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="field-group">
+          <label>Email</label>
+          <input type="email" id="client-email" placeholder="cliente@email.com">
+        </div>
+        <div class="field-group">
+          <label>Teléfono</label>
+          <input type="text" id="client-phone" placeholder="+54 11 0000-0000">
+        </div>
+        <div class="field-group">
+          <label>Fecha</label>
+          <input type="text" id="quote-date" readonly>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Items -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Ítems de la cotización</span>
+    </div>
+    <div class="card-body">
+
+      <!-- Selector para agregar ítems -->
+      <div class="item-selector">
+        <div class="field-group" style="flex:2;">
+          <label>Producto / Servicio</label>
+          <select id="item-select">
+            <option value="">— Seleccioná un ítem —</option>
+          </select>
+        </div>
+        <div class="field-group" style="width:100px;">
+          <label>Cantidad</label>
+          <input type="number" id="item-qty" value="1" min="0.01" step="any" placeholder="1">
+        </div>
+        <button class="btn btn-primary" onclick="addLineItem()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Agregar
+        </button>
+      </div>
+
+      <!-- Tabla de ítems -->
+      <div style="overflow-x:auto;">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th style="width:40%;">Descripción</th>
+              <th class="center">Cantidad</th>
+              <th class="center">Precio unitario</th>
+              <th>Subtotal</th>
+              <th class="no-print" style="width:40px;"></th>
+            </tr>
+          </thead>
+          <tbody id="items-body">
+            <tr id="empty-row">
+              <td colspan="5">
+                <div class="empty-state">
+                  <div class="empty-icon">📋</div>
+                  Aún no hay ítems. Seleccioná un producto y hacé clic en Agregar.
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Totales -->
+      <div class="totals-block">
+        <div class="totals-row">
+          <span class="label">Subtotal</span>
+          <span class="money" id="subtotal-display">$ 0,00</span>
+        </div>
+        <div class="totals-row">
+          <span class="label">
+            <span class="tax-row">
+              IVA
+              <input class="tax-input no-print" type="number" id="tax-rate" value="21" min="0" max="100" step="0.5" onchange="recalc()">
+              <span>%</span>
+            </span>
+          </span>
+          <span class="money" id="tax-display">$ 0,00</span>
+        </div>
+        <div class="totals-row total-final">
+          <span class="label">TOTAL</span>
+          <span class="money" id="total-display">$ 0,00</span>
+        </div>
+      </div>
+
+      <!-- Notas y validez -->
+      <div class="quote-meta">
+        <div class="field-group">
+          <label>Notas / Condiciones</label>
+          <textarea id="quote-notes" placeholder="Ej: Precios en pesos. Validez 15 días. Forma de pago: 50% anticipo."></textarea>
+        </div>
+        <div class="field-group">
+          <label>Condiciones de entrega</label>
+          <textarea id="quote-delivery" placeholder="Ej: Entrega en 10 días hábiles desde aprobación."></textarea>
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div class="action-bar">
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-outline" onclick="clearQuote()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+            Limpiar cotización
+          </button>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-outline" onclick="window.print()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+            Imprimir / PDF
+          </button>
+          <button class="btn btn-primary" onclick="copyQuote()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copiar resumen
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- TAB: CONFIGURAR PRECIOS                                    -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="page" id="page-config">
+
+  <!-- Datos de la empresa -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-header">
+      <span class="card-title">Datos de tu empresa</span>
+    </div>
+    <div class="card-body">
+      <div class="grid-3">
+        <div class="field-group" style="grid-column:span 2;">
+          <label>Nombre de la empresa</label>
+          <input type="text" id="company-name" placeholder="Mi Empresa S.A." oninput="updateBrand()">
+        </div>
+        <div class="field-group">
+          <label>Moneda</label>
+          <select id="currency-symbol">
+            <option value="$">$ (Pesos)</option>
+            <option value="U$D">U$D (Dólares)</option>
+            <option value="€">€ (Euros)</option>
+            <option value="R$">R$ (Reales)</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top:14px;">
+        <div class="field-group">
+          <label>Teléfono / WhatsApp</label>
+          <input type="text" id="company-phone" placeholder="+54 11 0000-0000">
+        </div>
+        <div class="field-group">
+          <label>Email de contacto</label>
+          <input type="text" id="company-email" placeholder="info@miempresa.com">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de precios -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Lista de precios</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span class="tag tag-saved" id="saved-indicator" style="display:none;">✓ Guardado</span>
+        <button class="btn btn-outline btn-sm" onclick="addNewItem()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo ítem
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="config-headers">
+        <div class="col-header">Nombre del producto / servicio</div>
+        <div class="col-header">Unidad</div>
+        <div class="col-header" style="text-align:right;">Precio unitario</div>
+        <div></div>
+      </div>
+      <div id="price-list"></div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button class="btn btn-outline" onclick="resetPrices()">Restablecer ejemplo</button>
+        <button class="btn btn-primary" onclick="savePrices()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Guardar cambios
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- JAVASCRIPT                                                 -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<script>
+// ── Default catalog ──────────────────────────────────────────
+const DEFAULT_CATALOG = [
+  { id: 1, name: "Consultoría inicial",    unit: "hora",     price: 5000  },
+  { id: 2, name: "Desarrollo web",         unit: "hora",     price: 8000  },
+  { id: 3, name: "Diseño gráfico",         unit: "hora",     price: 4500  },
+  { id: 4, name: "Community management",   unit: "mes",      price: 35000 },
+  { id: 5, name: "Redacción de contenido", unit: "pieza",    price: 2000  },
+  { id: 6, name: "Fotografía profesional", unit: "sesión",   price: 18000 },
+  { id: 7, name: "Capacitación",           unit: "hora",     price: 6000  },
+  { id: 8, name: "Soporte técnico",        unit: "hora",     price: 3500  },
+];
+
+let catalog = [];
+let lineItems = [];
+let nextItemId = 100;
+
+// ── Init ──────────────────────────────────────────────────────
+function init() {
+  const saved = localStorage.getItem('cotizador_catalog');
+  catalog = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_CATALOG));
+  const savedCompany = localStorage.getItem('cotizador_company');
+  if (savedCompany) {
+    const c = JSON.parse(savedCompany);
+    document.getElementById('company-name').value = c.name || '';
+    document.getElementById('company-phone').value = c.phone || '';
+    document.getElementById('company-email').value = c.email || '';
+    if (c.currency) document.getElementById('currency-symbol').value = c.currency;
+    updateBrand();
+  }
+  document.getElementById('quote-date').value = new Date().toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric' });
+  document.getElementById('quote-number').value = 'COT-' + String(Math.floor(Math.random()*900)+100);
+  renderCatalogSelect();
+  renderPriceList();
+}
+
+// ── Tabs ──────────────────────────────────────────────────────
+function showTab(tab) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  event.target.classList.add('active');
+  if (tab === 'config') renderPriceList();
+}
+
+// ── Catalog select ────────────────────────────────────────────
+function renderCatalogSelect() {
+  const sel = document.getElementById('item-select');
+  sel.innerHTML = '<option value="">— Seleccioná un ítem —</option>';
+  catalog.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.id;
+    opt.textContent = item.name + ' — ' + fmt(item.price) + ' / ' + item.unit;
+    sel.appendChild(opt);
+  });
+}
+
+// ── Add line item ─────────────────────────────────────────────
+function addLineItem() {
+  const sel = document.getElementById('item-select');
+  const qty = parseFloat(document.getElementById('item-qty').value);
+  const itemId = parseInt(sel.value);
+  if (!itemId) { toast('Seleccioná un ítem primero'); return; }
+  if (!qty || qty <= 0) { toast('Ingresá una cantidad válida'); return; }
+  const catalogItem = catalog.find(c => c.id === itemId);
+  if (!catalogItem) return;
+  // Check if already exists → update qty
+  const existing = lineItems.find(l => l.catalogId === itemId);
+  if (existing) {
+    existing.qty += qty;
+  } else {
+    lineItems.push({
+      id: nextItemId++,
+      catalogId: itemId,
+      name: catalogItem.name,
+      unit: catalogItem.unit,
+      price: catalogItem.price,
+      qty: qty,
+    });
+  }
+  document.getElementById('item-qty').value = '1';
+  sel.value = '';
+  renderLineItems();
+}
+
+// ── Render line items ─────────────────────────────────────────
+function renderLineItems() {
+  const tbody = document.getElementById('items-body');
+  tbody.innerHTML = '';
+  if (lineItems.length === 0) {
+    tbody.innerHTML = `<tr id="empty-row"><td colspan="5">
+      <div class="empty-state"><div class="empty-icon">📋</div>
+      Aún no hay ítems. Seleccioná un producto y hacé clic en Agregar.</div>
+    </td></tr>`;
+    recalc(); return;
+  }
+  const currency = currencySymbol();
+  lineItems.forEach(item => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <div class="item-name">${esc(item.name)}</div>
+        <div class="item-unit">${esc(item.unit)}</div>
+      </td>
+      <td class="center">
+        <input class="qty-input" type="number" value="${item.qty}" min="0.01" step="any"
+          onchange="updateQty(${item.id}, this.value)">
+      </td>
+      <td class="center money">${currency} ${fmtN(item.price)}</td>
+      <td class="subtotal money" id="sub-${item.id}">${currency} ${fmtN(item.price * item.qty)}</td>
+      <td class="no-print" style="text-align:right;">
+        <button class="btn btn-danger btn-icon" onclick="removeItem(${item.id})" title="Eliminar">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  recalc();
+}
+
+function updateQty(id, val) {
+  const item = lineItems.find(l => l.id === id);
+  if (!item) return;
+  item.qty = Math.max(0, parseFloat(val) || 0);
+  const currency = currencySymbol();
+  const cell = document.getElementById('sub-' + id);
+  if (cell) cell.textContent = currency + ' ' + fmtN(item.price * item.qty);
+  recalc();
+}
+
+function removeItem(id) {
+  lineItems = lineItems.filter(l => l.id !== id);
+  renderLineItems();
+}
+
+// ── Recalc totals ─────────────────────────────────────────────
+function recalc() {
+  const currency = currencySymbol();
+  const subtotal = lineItems.reduce((acc, i) => acc + i.price * i.qty, 0);
+  const taxRate  = parseFloat(document.getElementById('tax-rate').value) || 0;
+  const tax      = subtotal * taxRate / 100;
+  const total    = subtotal + tax;
+  document.getElementById('subtotal-display').textContent = currency + ' ' + fmtN(subtotal);
+  document.getElementById('tax-display').textContent      = currency + ' ' + fmtN(tax);
+  document.getElementById('total-display').textContent    = currency + ' ' + fmtN(total);
+}
+
+// ── Clear ─────────────────────────────────────────────────────
+function clearQuote() {
+  if (!confirm('¿Limpiar todos los ítems de la cotización?')) return;
+  lineItems = [];
+  renderLineItems();
+}
+function clearClient() {
+  ['client-name','client-email','client-phone','quote-notes','quote-delivery'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+// ── Copy summary ──────────────────────────────────────────────
+function copyQuote() {
+  const client = document.getElementById('client-name').value || 'Cliente';
+  const num    = document.getElementById('quote-number').value;
+  const date   = document.getElementById('quote-date').value;
+  const currency = currencySymbol();
+  const taxRate = parseFloat(document.getElementById('tax-rate').value) || 0;
+  const subtotal = lineItems.reduce((a,i)=>a+i.price*i.qty,0);
+  const tax = subtotal * taxRate/100;
+  const total = subtotal + tax;
+  let txt = `COTIZACIÓN ${num} — ${date}\nCliente: ${client}\n\n`;
+  lineItems.forEach(i => {
+    txt += `• ${i.name} x${i.qty} ${i.unit} @ ${currency}${fmtN(i.price)} = ${currency}${fmtN(i.price*i.qty)}\n`;
+  });
+  txt += `\nSubtotal: ${currency}${fmtN(subtotal)}\nIVA (${taxRate}%): ${currency}${fmtN(tax)}\nTOTAL: ${currency}${fmtN(total)}`;
+  const notes = document.getElementById('quote-notes').value;
+  if (notes) txt += `\n\nNotas: ${notes}`;
+  navigator.clipboard.writeText(txt).then(()=>toast('Resumen copiado al portapapeles')).catch(()=>toast('No se pudo copiar'));
+}
+
+// ── Price list config ─────────────────────────────────────────
+function renderPriceList() {
+  const container = document.getElementById('price-list');
+  container.innerHTML = '';
+  catalog.forEach((item, idx) => {
+    const row = document.createElement('div');
+    row.className = 'config-grid';
+    row.innerHTML = `
+      <input class="price-name-field" type="text" value="${esc(item.name)}" placeholder="Nombre del producto/servicio"
+        onchange="catalog[${idx}].name=this.value">
+      <input class="price-unit-field" type="text" value="${esc(item.unit)}" placeholder="ud., hora, mes…"
+        onchange="catalog[${idx}].unit=this.value">
+      <input class="price-price-field" type="number" value="${item.price}" min="0" step="any"
+        onchange="catalog[${idx}].price=parseFloat(this.value)||0">
+      <button class="btn btn-danger btn-icon" onclick="deleteCatalogItem(${idx})" title="Eliminar">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>`;
+    container.appendChild(row);
+  });
+}
+
+function addNewItem() {
+  catalog.push({ id: Date.now(), name: '', unit: 'hora', price: 0 });
+  renderPriceList();
+  const inputs = document.querySelectorAll('.price-name-field');
+  if (inputs.length) inputs[inputs.length-1].focus();
+}
+
+function deleteCatalogItem(idx) {
+  catalog.splice(idx, 1);
+  renderPriceList();
+}
+
+function savePrices() {
+  localStorage.setItem('cotizador_catalog', JSON.stringify(catalog));
+  const companyData = {
+    name:     document.getElementById('company-name').value,
+    phone:    document.getElementById('company-phone').value,
+    email:    document.getElementById('company-email').value,
+    currency: document.getElementById('currency-symbol').value,
+  };
+  localStorage.setItem('cotizador_company', JSON.stringify(companyData));
+  renderCatalogSelect();
+  const ind = document.getElementById('saved-indicator');
+  ind.style.display = 'inline-flex';
+  setTimeout(() => ind.style.display='none', 2500);
+  toast('Cambios guardados');
+}
+
+function resetPrices() {
+  if (!confirm('¿Restablecer la lista de ejemplo? Se perderán los cambios no guardados.')) return;
+  catalog = JSON.parse(JSON.stringify(DEFAULT_CATALOG));
+  renderPriceList();
+}
+
+function updateBrand() {
+  const name = document.getElementById('company-name').value;
+  document.getElementById('header-brand').textContent = name || 'Mi Empresa';
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+function fmt(n)  { return currencySymbol() + ' ' + fmtN(n); }
+function fmtN(n) { return parseFloat(n).toLocaleString('es-AR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function esc(s)  { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function currencySymbol() { return document.getElementById('currency-symbol').value; }
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+document.getElementById('tax-rate').addEventListener('input', recalc);
+init();
+</script>
+</body>
+</html>
